@@ -1,0 +1,1386 @@
+<html><head><base href="." />
+<meta charset="UTF-8">
+<title>Windows ME Emulator</title>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: #008080;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+.desktop {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.taskbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(to bottom, #d6d6d6, #a0a0a0);
+    border-top: 2px solid #fff;
+    align-items: center;
+}
+
+.quick-launch {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    border-right: 1px solid #999;
+    padding-right: 10px;
+}
+
+.quick-launch-icon {
+    width: 24px;
+    height: 24px;
+    margin: 0 2px;
+    cursor: pointer;
+    padding: 2px;
+    border: 1px solid transparent;
+}
+
+.quick-launch-icon:hover {
+    border: 1px solid #fff;
+    background: rgba(255,255,255,0.2);
+}
+
+.start-button {
+    width: 80px;
+    height: 24px;
+    margin-left: 2px;
+    background: linear-gradient(to bottom, #378fe6, #1f5c9c);
+    border: 1px solid #1f5c9c;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+    cursor: pointer;
+}
+
+.active-programs {
+    display: flex;
+    flex-grow: 1;
+    margin: 0 10px;
+}
+
+.program-button {
+    background: linear-gradient(to bottom, #d6d6d6, #a0a0a0);
+    border: 1px solid #666;
+    padding: 2px 8px;
+    margin: 2px;
+    min-width: 150px;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.program-button.active {
+    background: linear-gradient(to bottom, #378fe6, #1f5c9c);
+    color: white;
+}
+
+.taskbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.clock {
+    background: #d6d6d6;
+    padding: 2px 8px;
+    border: 1px inset #fff;
+    font-size: 12px;
+}
+
+#time {
+    margin-right: 5px;
+}
+
+.start-menu {
+    position: fixed;
+    bottom: 32px;
+    left: 0;
+    width: 200px;
+    background: #d6d6d6;
+    border: 2px solid #000;
+    display: none;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+.sub-menu {
+    position: absolute;
+    left: 200px;
+    top: 0;
+    width: 200px;
+    background: #d6d6d6;
+    border: 2px solid #000;
+    display: none;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+.start-menu-item {
+    padding: 8px;
+    cursor: pointer;
+    position: relative;
+}
+
+.start-menu-item:hover {
+    background: #378fe6;
+    color: white;
+}
+
+.start-menu-item:hover > .sub-menu {
+    display: block;
+}
+
+.desktop-icon {
+    width: 70px;
+    text-align: center;
+    color: white;
+    margin: 10px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.desktop-icon svg {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 5px;
+}
+
+.window {
+    position: absolute;
+    background: #d6d6d6;
+    border: 2px solid #000;
+    min-width: 200px;
+    min-height: 150px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    display: none;
+}
+
+.window-header {
+    background: linear-gradient(to right, #000080, #1084d0);
+    color: white;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.window-content {
+    padding: 10px;
+    background: white;
+    height: calc(100% - 40px);
+}
+
+.close-btn {
+    background: #ff0000;
+    border: 1px solid #dark-red;
+    color: white;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.shutdown-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000080;
+    color: white;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.loading-circle {
+    width: 50px;
+    height: 50px;
+    border: 5px solid white;
+    border-top: 5px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ie-content {
+    background: white;
+    padding: 10px;
+}
+
+.ie-toolbar {
+    background: #d6d6d6;
+    padding: 5px;
+    border-bottom: 1px solid #999;
+}
+
+.ie-toolbar input[type="text"] {
+    width: 70%;
+    padding: 2px;
+}
+
+.ie-toolbar button {
+    padding: 2px 8px;
+    margin: 0 2px;
+}
+
+.calculator-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#calcDisplay {
+    width: calc(100% - 20px);
+    height: 40px;
+    font-size: 20px;
+    text-align: right;
+    padding: 5px;
+    margin: 10px;
+    background: #e0e0e0;
+    border: 1px inset #fff;
+}
+
+.calc-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    padding: 10px;
+}
+
+.calc-buttons button {
+    padding: 10px;
+    font-size: 16px;
+    background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);
+    border: 1px outset #fff;
+    cursor: pointer;
+}
+
+.calc-buttons button:active {
+    border-style: inset;
+    background: linear-gradient(to bottom, #d0d0d0, #f0f0f0);
+}
+</style>
+<audio id="startupSound" preload="auto">
+    <source src="https://www.winhistory.de/more/winstart/windows2000.mp3" type="audio/mpeg">
+</audio>
+<audio id="shutdownSound" preload="auto">
+    <source src="https://www.winhistory.de/more/winstart/windows2000_shutdown.mp3" type="audio/mpeg">
+</audio>
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+</head>
+<body>
+<div class="desktop">
+    <div class="desktop-icon" onclick="openMyComputer()">
+        <svg viewBox="0 0 32 32">
+            <rect x="2" y="6" width="28" height="20" fill="#FFE55C"/>
+            <rect x="4" y="8" width="24" height="16" fill="#87CEEB"/>
+            <path d="M8 12h16v8H8z" fill="#C3C3C3"/>
+            <circle cx="16" cy="16" r="4" fill="#4B4B4B"/>
+        </svg>
+        <div>My Computer</div>
+    </div>
+
+    <div class="desktop-icon" onclick="openNotepad()">
+        <svg viewBox="0 0 32 32">
+            <path d="M6 2h20v28H6z" fill="white"/>
+            <path d="M8 4h16v2H8zM8 8h16M8 12h16M8 16h16M8 20h12" stroke="#000" fill="none"/>
+            <path d="M6 2h20v4H6z" fill="#C3C3C3"/>
+        </svg>
+        <div>Notepad</div>
+    </div>
+
+    <div class="desktop-icon" onclick="openInternetExplorer()">
+        <svg viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="14" fill="#0078D7"/>
+            <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z" fill="#00A2ED"/>
+            <path d="M24 16c0-4.4-3.6-8-8-8s-8 3.6-8 8h16z" fill="white"/>
+        </svg>
+        <div>Internet Explorer</div>
+    </div>
+</div>
+
+<div class="taskbar">
+    <div class="quick-launch">
+        <div class="quick-launch-icon" onclick="openInternetExplorer()" title="Internet Explorer">
+            <svg viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="14" fill="#0078D7"/>
+                <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2z" fill="#00A2ED"/>
+            </svg>
+        </div>
+        <div class="quick-launch-icon" onclick="openNotepad()" title="Notepad">
+            <svg viewBox="0 0 32 32">
+                <path d="M6 2h20v28H6z" fill="white"/>
+                <path d="M8 4h16v2H8zM8 8h16M8 12h16M8 16h16M8 20h12" stroke="#000" fill="none"/>
+                <path d="M6 2h20v4H6z" fill="#C3C3C3"/>
+            </svg>
+        </div>
+        <div class="quick-launch-icon" onclick="openCalculator()" title="Calculator">
+            <svg viewBox="0 0 32 32">
+                <rect x="4" y="4" width="24" height="24" fill="#f0f0f0"/>
+                <path d="M6 6h20v6H6z" fill="#fff"/>
+            </svg>
+        </div>
+        <div class="quick-launch-icon" onclick="openFlashPlayer()" title="Flash Player">
+            <svg viewBox="0 0 32 32">
+                <rect x="4" y="4" width="24" height="24" fill="#ff0000"/>
+                <path d="M12 8l12 8-12 8V8z" fill="white"/>
+            </svg>
+        </div>
+    </div>
+    <div class="start-button" onclick="toggleStartMenu()">
+        Start
+    </div>
+    <div class="active-programs">
+        <!-- Active program buttons will be added here dynamically -->
+    </div>
+    <div class="taskbar-right">
+        <div class="clock">
+            <span id="time"></span>
+            <span id="date"></span>
+        </div>
+    </div>
+</div>
+
+<div class="start-menu" id="startMenu">
+    <div class="start-menu-item" onclick="toggleSubMenu('programsMenu')">
+        <span>Programs ►</span>
+        <div class="sub-menu" id="programsMenu">
+            <div class="start-menu-item" onclick="openPaint()">Paint</div>
+            <div class="start-menu-item" onclick="openCalculator()">Calculator</div>
+            <div class="start-menu-item" onclick="openSolitaire()">Solitaire</div>
+            <div class="start-menu-item" onclick="openMediaPlayer()">Windows Media Player</div>
+            <div class="start-menu-item" onclick="openWordPad()">WordPad</div>
+            <div class="start-menu-item" onclick="openMinesweeper()">Minesweeper</div>
+            <div class="start-menu-item" onclick="openCDPlayer()">CD Player</div>
+            <div class="start-menu-item" onclick="openFlashPlayer()">Flash Player</div>
+        </div>
+    </div>
+    <div class="start-menu-item" onclick="toggleSubMenu('documentsMenu')">
+        <span>Documents ►</span>
+        <div class="sub-menu" id="documentsMenu">
+            <div class="start-menu-item" onclick="openMyDocuments()">My Documents</div>
+            <div class="start-menu-item" onclick="openRecentFiles()">Recent Files</div>
+        </div>
+    </div>
+    <div class="start-menu-item" onclick="toggleSubMenu('settingsMenu')">
+        <span>Settings ►</span>
+        <div class="sub-menu" id="settingsMenu">
+            <div class="start-menu-item" onclick="openControlPanel()">Control Panel</div>
+            <div class="start-menu-item" onclick="openDisplaySettings()">Display Settings</div>
+            <div class="start-menu-item" onclick="openTaskbar()">Taskbar & Start Menu</div>
+            <div class="start-menu-item" onclick="openNetwork()">Network</div>
+            <div class="start-menu-item" onclick="openSound()">Sound</div>
+            <div class="start-menu-item" onclick="openUsers()">Users</div>
+        </div>
+    </div>
+    <div class="start-menu-item" onclick="shutdown()">Shut Down...</div>
+</div>
+
+<div class="window" id="myComputerWindow">
+    <div class="window-header">
+        <span>My Computer</span>
+        <div class="close-btn" onclick="closeWindow('myComputerWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <p>Local Disk (C:)</p>
+        <p>CD Drive (D:)</p>
+        <p>Control Panel</p>
+    </div>
+</div>
+
+<div class="window" id="notepadWindow">
+    <div class="window-header">
+        <span>Untitled - Notepad</span>
+        <div class="close-btn" onclick="closeWindow('notepadWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <textarea style="width: 100%; height: 100%; border: none; resize: none;"></textarea>
+    </div>
+</div>
+
+<div class="window" id="ieWindow" style="width: 800px; height: 600px;">
+    <div class="window-header">
+        <span>Internet Explorer</span>
+        <div class="close-btn" onclick="closeWindow('ieWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <div class="ie-toolbar">
+            <button onclick="ieBack()">←</button>
+            <button onclick="ieForward()">→</button>
+            <button onclick="ieRefresh()">↻</button>
+            <input type="text" id="ieUrlBar" placeholder="Enter URL or search term...">
+            <button onclick="ieNavigate()">Go</button>
+        </div>
+        <div class="ie-content">
+            <iframe id="ieFrame" style="width: 100%; height: 500px; border: none;"></iframe>
+        </div>
+    </div>
+</div>
+
+<div class="window" id="paintWindow">
+    <div class="window-header">
+        <span>Paint</span>
+        <div class="close-btn" onclick="closeWindow('paintWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <div style="padding: 10px; background: #f0f0f0;">
+            <div style="background: white; border: 1px solid #999; padding: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <button onclick="setPaintColor('#000000')" style="background: #000000; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ff0000')" style="background: #ff0000; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#0000ff')" style="background: #0000ff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#00ff00')" style="background: #00ff00; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ffff00')" style="background: #ffff00; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ff00ff')" style="background: #ff00ff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ffffff')" style="background: #ffffff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <input type="color" id="colorPicker" onchange="setPaintColor(this.value)" style="margin-left: 10px;">
+                    <select id="brushSize" onchange="setBrushSize(this.value)" style="margin-left: 10px;">
+                        <option value="1">1px</option>
+                        <option value="3">3px</option>
+                        <option value="5">5px</option>
+                        <option value="10">10px</option>
+                    </select>
+                    <button onclick="clearPaintCanvas()" style="margin-left: 10px;">Clear</button>
+                </div>
+                <canvas id="paintCanvas" width="400" height="300" style="border: 1px solid #999; cursor: crosshair;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="window" id="calculatorWindow">
+    <div class="window-header">
+        <span>Calculator</span>
+        <div class="close-btn" onclick="closeWindow('calculatorWindow')">×</div>
+    </div>
+    <div class="window-content calculator-content">
+        <input type="text" id="calcDisplay" readonly>
+        <div class="calc-buttons">
+            <button onclick="calcInput('7')">7</button>
+            <button onclick="calcInput('8')">8</button>
+            <button onclick="calcInput('9')">9</button>
+            <button onclick="calcInput('+')">+</button>
+            <button onclick="calcInput('4')">4</button>
+            <button onclick="calcInput('5')">5</button>
+            <button onclick="calcInput('6')">6</button>
+            <button onclick="calcInput('-')">-</button>
+            <button onclick="calcInput('1')">1</button>
+            <button onclick="calcInput('2')">2</button>
+            <button onclick="calcInput('3')">3</button>
+            <button onclick="calcInput('*')">×</button>
+            <button onclick="calcInput('0')">0</button>
+            <button onclick="calcClear()">C</button>
+            <button onclick="calcEquals()">=</button>
+            <button onclick="calcInput('/')">/</button>
+        </div>
+    </div>
+</div>
+
+<div class="window" id="solitaireWindow">
+    <div class="window-header">
+        <span>Solitaire</span>
+        <div class="close-btn" onclick="closeWindow('solitaireWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <div class="solitaire-table" style="background: #008000; width: 100%; height: 100%; padding: 20px;">
+            <div style="text-align: center; color: white; padding-top: 40%;">
+                Solitaire Game
+                <br><br>
+                <button onclick="alert('Game feature coming soon!')">New Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="window" id="controlPanelWindow">
+    <div class="window-header">
+        <span>Control Panel</span>
+        <div class="close-btn" onclick="closeWindow('controlPanelWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <div class="control-panel-item" onclick="openDisplaySettings()">Display</div>
+        <div class="control-panel-item" onclick="openSound()">Sound</div>
+        <div class="control-panel-item" onclick="openNetwork()">Network</div>
+        <div class="control-panel-item" onclick="openUsers()">Users</div>
+    </div>
+</div>
+
+<div class="window" id="flashPlayerWindow">
+    <div class="window-header">
+        <span>Adobe Flash Player (Ruffle)</span>
+        <div class="close-btn" onclick="closeWindow('flashPlayerWindow')">×</div>
+    </div>
+    <div class="window-content">
+        <div style="padding: 20px; background: #333; color: white;">
+            <div style="text-align: center;">
+                <h3>Adobe Flash Player (Ruffle)</h3>
+                <div id="flashContent" style="width: 400px; height: 300px; background: #000; margin: 20px auto; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <p>Ready to play Flash content using Ruffle</p>
+                        <input type="file" id="flashFile" accept=".swf" style="display: none;" onchange="handleFlashFile(this.files[0])">
+                        <button onclick="document.getElementById('flashFile').click()" style="padding: 8px 16px; background: #666; border: none; color: white; cursor: pointer;">
+                            Open Flash File (.swf)
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button onclick="playFlash()" style="margin: 0 5px;">Play</button>
+                    <button onclick="stopFlash()" style="margin: 0 5px;">Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="shutdown-screen">
+    <div class="loading-circle"></div>
+    <h2>Windows ME is starting...</h2>
+    <p style="margin-top: 20px; font-size: 14px;">Click anywhere to continue...</p>
+</div>
+
+<script>
+let activeWindow = null;
+let offsetX, offsetY;
+let calcDisplay = '';
+let lastOperation = null;
+let storedNumber = null;
+
+function updateClock() {
+    const now = new Date();
+    const timeElement = document.getElementById('time');
+    const dateElement = document.getElementById('date');
+    
+    timeElement.textContent = now.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
+    
+    dateElement.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+function toggleStartMenu() {
+    const startMenu = document.getElementById('startMenu');
+    startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleSubMenu(menuId) {
+    const subMenus = document.querySelectorAll('.sub-menu');
+    subMenus.forEach(menu => {
+        if (menu.id !== menuId) {
+            menu.style.display = 'none';
+        }
+    });
+    const selectedMenu = document.getElementById(menuId);
+    selectedMenu.style.display = selectedMenu.style.display === 'block' ? 'none' : 'block';
+}
+
+function addToTaskbar(windowId, title) {
+    const activePrograms = document.querySelector('.active-programs');
+    const button = document.createElement('div');
+    button.className = 'program-button';
+    button.textContent = title;
+    button.onclick = () => toggleWindow(windowId);
+    button.setAttribute('data-window', windowId);
+    activePrograms.appendChild(button);
+}
+
+function closeWindow(windowId) {
+    const window = document.getElementById(windowId);
+    if (window) {
+        window.style.display = 'none';
+        removeFromTaskbar(windowId);
+    }
+}
+
+function removeFromTaskbar(windowId) {
+    const button = document.querySelector(`.program-button[data-window="${windowId}"]`);
+    if (button) {
+        button.remove();
+    }
+}
+
+function toggleWindow(windowId) {
+    const window = document.getElementById(windowId);
+    if (window.style.display === 'none') {
+        window.style.display = 'block';
+        bringToFront(window);
+    } else {
+        window.style.display = 'none';
+    }
+    updateTaskbarButtons();
+}
+
+function updateTaskbarButtons() {
+    document.querySelectorAll('.program-button').forEach(button => {
+        const windowId = button.getAttribute('data-window');
+        const window = document.getElementById(windowId);
+        button.classList.toggle('active', window.style.display === 'block');
+    });
+}
+
+function openMyComputer() {
+    const window = document.getElementById('myComputerWindow');
+    window.style.display = 'block';
+    window.style.left = '100px';
+    window.style.top = '100px';
+    bringToFront(window);
+    addToTaskbar('myComputerWindow', 'My Computer');
+    updateTaskbarButtons();
+}
+
+function openNotepad() {
+    const window = document.getElementById('notepadWindow');
+    window.style.display = 'block';
+    window.style.left = '150px';
+    window.style.top = '150px';
+    window.style.width = '400px';
+    window.style.height = '300px';
+    bringToFront(window);
+    addToTaskbar('notepadWindow', 'Notepad');
+    updateTaskbarButtons();
+}
+
+function openInternetExplorer() {
+    const window = document.getElementById('ieWindow');
+    window.style.display = 'block';
+    window.style.left = '50px';
+    window.style.top = '50px';
+    bringToFront(window);
+    
+    document.getElementById('ieUrlBar').value = 'https://classic.bing.com';
+    ieNavigate();
+    addToTaskbar('ieWindow', 'Internet Explorer');
+    updateTaskbarButtons();
+}
+
+function ieNavigate() {
+    const urlBar = document.getElementById('ieUrlBar');
+    const frame = document.getElementById('ieFrame');
+    let url = urlBar.value;
+    
+    // Add https:// if no protocol specified
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
+    
+    try {
+        frame.src = url;
+    } catch (e) {
+        console.error('Navigation error:', e);
+        frame.src = 'about:blank';
+        frame.contentDocument.body.innerHTML = `
+            <div style="padding: 20px; font-family: Arial;">
+                <h2>Error Loading Page</h2>
+                <p>The requested page could not be loaded.</p>
+                <p>Error: ${e.message}</p>
+            </div>
+        `;
+    }
+}
+
+function ieBack() {
+    const frame = document.getElementById('ieFrame');
+    try {
+        frame.contentWindow.history.back();
+    } catch (e) {
+        console.error('Navigation error:', e);
+    }
+}
+
+function ieForward() {
+    const frame = document.getElementById('ieFrame');
+    try {
+        frame.contentWindow.history.forward();
+    } catch (e) {
+        console.error('Navigation error:', e);
+    }
+}
+
+function ieRefresh() {
+    const frame = document.getElementById('ieFrame');
+    try {
+        frame.contentWindow.location.reload();
+    } catch (e) {
+        console.error('Navigation error:', e);
+    }
+}
+
+function openCalculator() {
+    const window = document.getElementById('calculatorWindow');
+    window.style.display = 'block';
+    window.style.left = '200px';
+    window.style.top = '150px';
+    window.style.width = '250px';
+    window.style.height = '350px';
+    bringToFront(window);
+    addToTaskbar('calculatorWindow', 'Calculator');
+    updateTaskbarButtons();
+}
+
+function openFlashPlayer() {
+    const flashPlayerContent = `
+        <div style="padding: 20px; background: #333; color: white;">
+            <div style="text-align: center;">
+                <h3>Adobe Flash Player (Ruffle)</h3>
+                <div id="flashContent" style="width: 400px; height: 300px; background: #000; margin: 20px auto; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <p>Ready to play Flash content using Ruffle</p>
+                        <input type="file" id="flashFile" accept=".swf" style="display: none;" onchange="handleFlashFile(this.files[0])">
+                        <button onclick="document.getElementById('flashFile').click()" style="padding: 8px 16px; background: #666; border: none; color: white; cursor: pointer;">
+                            Open Flash File (.swf)
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button onclick="playFlash()" style="margin: 0 5px;">Play</button>
+                    <button onclick="stopFlash()" style="margin: 0 5px;">Stop</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const window = createTempWindow('Adobe Flash Player (Ruffle)', flashPlayerContent, 500, 450);
+    window.id = 'flashPlayerWindow';
+    addToTaskbar('flashPlayerWindow', 'Flash Player');
+}
+
+function handleFlashFile(file) {
+    const flashContent = document.getElementById('flashContent');
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        // Clear previous content
+        flashContent.innerHTML = '';
+        
+        // Create container for Ruffle
+        const ruffleContainer = document.createElement('div');
+        ruffleContainer.id = 'ruffle-container';
+        ruffleContainer.style.width = '400px';
+        ruffleContainer.style.height = '300px';
+        flashContent.appendChild(ruffleContainer);
+        
+        // Initialize Ruffle
+        const ruffle = window.RufflePlayer.newest();
+        const player = ruffle.createPlayer();
+        ruffleContainer.appendChild(player);
+        
+        // Load the SWF file
+        player.load({
+            data: new Uint8Array(e.target.result),
+            swfFileName: file.name,
+            allowScriptAccess: true
+        }).catch(error => {
+            console.error('Ruffle error:', error);
+            flashContent.innerHTML = `
+                <div style="text-align: center;">
+                    <p>Error loading Flash file: ${error.message}</p>
+                </div>
+            `;
+        });
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+function playFlash() {
+    const player = document.querySelector('#ruffle-container ruffle-player');
+    if (player) {
+        player.play();
+    }
+}
+
+function stopFlash() {
+    const player = document.querySelector('#ruffle-container ruffle-player');
+    if (player) {
+        player.pause();
+    }
+}
+
+function openPaint() {
+    const paintContent = `
+        <div style="padding: 10px; background: #f0f0f0;">
+            <div style="background: white; border: 1px solid #999; padding: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <button onclick="setPaintColor('#000000')" style="background: #000000; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ff0000')" style="background: #ff0000; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#0000ff')" style="background: #0000ff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#00ff00')" style="background: #00ff00; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ffff00')" style="background: #ffff00; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ff00ff')" style="background: #ff00ff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <button onclick="setPaintColor('#ffffff')" style="background: #ffffff; width: 20px; height: 20px; border: 1px solid #666;"></button>
+                    <input type="color" id="colorPicker" onchange="setPaintColor(this.value)" style="margin-left: 10px;">
+                    <select id="brushSize" onchange="setBrushSize(this.value)" style="margin-left: 10px;">
+                        <option value="1">1px</option>
+                        <option value="3">3px</option>
+                        <option value="5">5px</option>
+                        <option value="10">10px</option>
+                    </select>
+                    <button onclick="clearPaintCanvas()" style="margin-left: 10px;">Clear</button>
+                </div>
+                <canvas id="paintCanvas" width="400" height="300" style="border: 1px solid #999; cursor: crosshair;"></canvas>
+            </div>
+        </div>
+    `;
+
+    const window = createTempWindow('Paint', paintContent, 450, 400);
+    window.id = 'paintWindow';
+    
+    // Set up the canvas after the window is created
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set default styles
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+    
+    function draw(e) {
+        if (!isDrawing) return;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+    
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    
+    addToTaskbar('paintWindow', 'Paint');
+}
+
+function openWordPad() {
+    const wordpadContent = `
+        <div style="padding: 20px;">
+            <div style="border: 1px solid #999; padding: 10px; background: white; height: calc(100% - 80px);">
+                <div style="border-bottom: 1px solid #999; padding-bottom: 10px; margin-bottom: 10px;">
+                    <button>File</button>
+                    <button>Edit</button>
+                    <button>View</button>
+                    <button>Insert</button>
+                    <button>Format</button>
+                    <button>Help</button>
+                </div>
+                <textarea style="width: 100%; height: calc(100% - 40px); border: none; resize: none; font-family: Arial;"></textarea>
+            </div>
+        </div>
+    `;
+    createTempWindow('WordPad', wordpadContent, 600, 400);
+}
+
+function openMinesweeper() {
+    const minesweeperContent = `
+        <div style="padding: 20px; text-align: center;">
+            <div style="background: #c0c0c0; padding: 10px; display: inline-block;">
+                <div style="border: 2px solid #808080; padding: 5px;">
+                    <div style="display: grid; grid-template-columns: repeat(8, 30px); gap: 1px;">
+                        ${Array(64).fill().map(() => `
+                            <button style="width: 30px; height: 30px; background: #c0c0c0; border: 2px outset #fff;"></button>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    createTempWindow('Minesweeper', minesweeperContent, 400, 450);
+    addToTaskbar('minesweeperWindow', 'Minesweeper');
+}
+
+function openCDPlayer() {
+    const cdPlayerContent = `
+        <div style="padding: 20px; background: #1f1f1f; color: white;">
+            <div style="text-align: center;">
+                <div style="margin: 20px;">
+                    <svg viewBox="0 0 100 100" width="100" height="100">
+                        <circle cx="50" cy="50" r="45" fill="#333"/>
+                        <circle cx="50" cy="50" r="15" fill="#666"/>
+                        <circle cx="50" cy="50" r="2" fill="#999"/>
+                    </svg>
+                </div>
+                <div style="margin: 20px;">
+                    <button>⏮</button>
+                    <button>▶</button>
+                    <button>⏸</button>
+                    <button>⏹</button>
+                    <button>⏭</button>
+                </div>
+                <div>No CD inserted</div>
+            </div>
+        </div>
+    `;
+    createTempWindow('CD Player', cdPlayerContent, 300, 400);
+}
+
+// Modify the Media Player to support video
+function openMediaPlayer() {
+    const mediaPlayerContent = `
+        <div style="padding: 20px; background: #1f1f1f; color: white;">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Windows Media Player</h3>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="margin: 20px 0;">
+                    <div id="mediaTitle" style="background: #333; padding: 10px; border-radius: 5px;">
+                        No media file selected
+                    </div>
+                </div>
+                <div id="mediaContainer" style="width: 100%; background: #000; aspect-ratio: 16/9; margin: 10px 0;">
+                    <video id="videoElement" style="width: 100%; height: 100%; display: none;"></video>
+                    <audio id="audioElement" style="width: 100%; display: none;"></audio>
+                </div>
+                <div id="mediaControls" style="display: flex; justify-content: center; gap: 10px;">
+                    <button onclick="handleMediaControl('prev')" style="padding: 5px 15px; background: #333; border: none; color: white; cursor: pointer;">⏮</button>
+                    <button onclick="handleMediaControl('play')" style="padding: 5px 15px; background: #333; border: none; color: white; cursor: pointer;">▶</button>
+                    <button onclick="handleMediaControl('pause')" style="padding: 5px 15px; background: #333; border: none; color: white; cursor: pointer;">⏸</button>
+                    <button onclick="handleMediaControl('next')" style="padding: 5px 15px; background: #333; border: none; color: white; cursor: pointer;">⏭</button>
+                </div>
+                <div style="margin-top: 20px;">
+                    <input type="range" id="mediaProgress" style="width: 80%;">
+                </div>
+                <div style="margin-top: 20px;">
+                    <input type="file" id="mediaFile" accept="audio/*,video/*" style="display: none;" onchange="handleMediaFile(this.files[0])">
+                    <button onclick="document.getElementById('mediaFile').click()" style="padding: 8px 16px; background: #1db954; border: none; color: white; cursor: pointer;">
+                        Open File
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const window = createTempWindow('Windows Media Player', mediaPlayerContent, 600, 500);
+    window.id = 'mediaPlayerWindow';
+    addToTaskbar('mediaPlayerWindow', 'Windows Media Player');
+}
+
+// Update handleMediaFile function to handle both audio and video
+function handleMediaFile(file) {
+    const videoElement = document.getElementById('videoElement');
+    const audioElement = document.getElementById('audioElement');
+    const mediaTitle = document.getElementById('mediaTitle');
+    const mediaURL = URL.createObjectURL(file);
+    
+    // Determine if the file is video or audio
+    const isVideo = file.type.startsWith('video/');
+    
+    if (isVideo) {
+        videoElement.style.display = 'block';
+        audioElement.style.display = 'none';
+        videoElement.src = mediaURL;
+        videoElement.play();
+    } else {
+        videoElement.style.display = 'none';
+        audioElement.style.display = 'block';
+        audioElement.src = mediaURL;
+        audioElement.play();
+    }
+    
+    mediaTitle.textContent = file.name;
+}
+
+function createTempWindow(title, content, width, height) {
+    const tempWindow = document.createElement('div');
+    tempWindow.className = 'window';
+    tempWindow.style.width = width + 'px';
+    tempWindow.style.height = height + 'px';
+    tempWindow.style.left = '200px';
+    tempWindow.style.top = '150px';
+    tempWindow.style.display = 'block';
+    
+    tempWindow.innerHTML = `
+        <div class="window-header">
+            <span>${title}</span>
+            <div class="close-btn" onclick="this.parentElement.parentElement.remove()">×</div>
+        </div>
+        <div class="window-content">
+            ${content}
+        </div>
+    `;
+    
+    document.body.appendChild(tempWindow);
+    bringToFront(tempWindow);
+    return tempWindow;
+}
+
+// Window dragging functionality
+document.querySelectorAll('.window-header').forEach(header => {
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('close-btn')) return;
+
+        activeWindow = header.parentElement;
+        bringToFront(activeWindow);
+        
+        const rect = activeWindow.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        document.addEventListener('mousemove', moveWindow);
+    });
+});
+
+document.addEventListener('mouseup', () => {
+    document.removeEventListener('mousemove', moveWindow);
+    activeWindow = null;
+});
+
+function moveWindow(e) {
+    if (!activeWindow) return;
+    
+    activeWindow.style.left = `${e.clientX - offsetX}px`;
+    activeWindow.style.top = `${e.clientY - offsetY}px`;
+}
+
+function bringToFront(window) {
+    document.querySelectorAll('.window').forEach(w => {
+        w.style.zIndex = '1';
+    });
+    window.style.zIndex = '2';
+}
+
+function openPrograms() {
+    alert('Programs menu - Feature coming soon!');
+    toggleStartMenu();
+}
+
+function openDocuments() {
+    alert('Documents - Feature coming soon!');
+    toggleStartMenu();
+}
+
+function openSettings() {
+    alert('Settings - Feature coming soon!');
+    toggleStartMenu();
+}
+
+function openMyDocuments() {
+    const myDocumentsContent = `
+        <div style="padding: 20px;">
+            <h3>My Documents</h3>
+            <div style="margin: 10px 0;">
+                <div style="display: flex; align-items: center; padding: 5px; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" style="margin-right: 10px;">
+                        <path fill="#FFA000" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                    </svg>
+                    My Files Folder
+                </div>
+                <div style="display: flex; align-items: center; padding: 5px; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" style="margin-right: 10px;">
+                        <path fill="#90CAF9" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                    </svg>
+                    Documents.txt
+                </div>
+                <div style="display: flex; align-items: center; padding: 5px; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" style="margin-right: 10px;">
+                        <path fill="#90CAF9" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                    </svg>
+                    ReadMe.txt
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <small>3 items</small>
+            </div>
+        </div>
+    `;
+    
+    const window = createTempWindow('My Documents', myDocumentsContent, 400, 300);
+    window.id = 'myDocumentsWindow';
+    addToTaskbar('myDocumentsWindow', 'My Documents');
+}
+
+function openNetwork() {
+    const networkContent = `
+        <div style="padding: 20px;">
+            <h3>Network Connections</h3>
+            <div style="margin: 10px 0;">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'><path fill='%23000' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>">
+                Local Area Connection
+                <br>
+                <small>Status: Connected</small>
+            </div>
+            <div style="margin: 10px 0;">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'><path fill='%23000' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>">
+                Dial-up Connection
+                <br>
+                <small>Status: Not connected</small>
+            </div>
+            <button onclick="alert('Network Settings are read-only in this demo.')">Network Settings</button>
+        </div>
+    `;
+    
+    createTempWindow('Network Connections', networkContent, 400, 300);
+}
+
+function openSound() {
+    const soundContent = `
+        <div style="padding: 20px;">
+            <h3>Sound Properties</h3>
+            <div style="margin: 10px 0;">
+                <label>Volume:</label>
+                <input type="range" min="0" max="100" value="50">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Sound Scheme:</label>
+                <select>
+                    <option>Windows Default</option>
+                    <option>No Sounds</option>
+                    <option>Windows Classic</option>
+                </select>
+            </div>
+            <button onclick="alert('Sound Settings are read-only in this demo.')">Apply</button>
+        </div>
+    `;
+    
+    createTempWindow('Sound Properties', soundContent, 400, 300);
+}
+
+function openUsers() {
+    const usersContent = `
+        <div style="padding: 20px;">
+            <h3>User Accounts</h3>
+            <div style="margin: 10px 0;">
+                <strong>Current User:</strong> Administrator
+            </div>
+            <div style="margin: 10px 0;">
+                <button onclick="alert('User account management is disabled in this demo.')">Add New User</button>
+                <button onclick="alert('User account management is disabled in this demo.')">Change User</button>
+            </div>
+        </div>
+    `;
+    
+    createTempWindow('User Accounts', usersContent, 400, 300);
+}
+
+// New Display Settings function
+function openDisplaySettings() {
+    const displayContent = `
+        <div style="padding: 20px;">
+            <h3>Display Properties</h3>
+            <div style="margin: 10px 0;">
+                <label>Screen Resolution:</label>
+                <select>
+                    <option>800 x 600</option>
+                    <option>1024 x 768</option>
+                    <option>1280 x 1024</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Color Quality:</label>
+                <select>
+                    <option>16-bit</option>
+                    <option>24-bit</option>
+                    <option>32-bit</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Desktop Theme:</label>
+                <select>
+                    <option>Windows Classic</option>
+                    <option>Windows Standard</option>
+                    <option>High Contrast</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Screen Saver:</label>
+                <select>
+                    <option>None</option>
+                    <option>3D Text</option>
+                    <option>Mystify</option>
+                    <option>Starfield</option>
+                </select>
+            </div>
+            <button onclick="alert('Display Settings are read-only in this demo.')">Apply</button>
+            <button onclick="alert('Display Settings are read-only in this demo.')">OK</button>
+            <button onclick="this.closest('.window').remove()">Cancel</button>
+        </div>
+    `;
+    
+    const window = createTempWindow('Display Properties', displayContent, 400, 450);
+    window.id = 'displaySettingsWindow';
+    addToTaskbar('displaySettingsWindow', 'Display Properties');
+}
+
+// Call this when the OS starts
+window.addEventListener('load', () => {
+    addQuickLaunchIcons();
+    document.querySelector('.shutdown-screen').style.display = 'flex';
+    document.querySelector('.shutdown-screen h2').textContent = 'Windows ME is starting...';
+    
+    document.querySelector('.shutdown-screen').addEventListener('click', startOS, { once: true });
+});
+
+function startOS() {
+    const startupSound = document.getElementById('startupSound');
+    startupSound.play().catch(err => console.log('Audio playback failed:', err));
+    
+    setTimeout(() => {
+        document.querySelector('.shutdown-screen').style.display = 'none';
+    }, 2000);
+}
+
+function openSolitaire() {
+    const window = document.getElementById('solitaireWindow');
+    window.style.display = 'block';
+    window.style.left = '150px';
+    window.style.top = '150px';
+    window.style.width = '800px';
+    window.style.height = '600px';
+    bringToFront(window);
+    addToTaskbar('solitaireWindow', 'Solitaire');
+}
+
+function addQuickLaunchIcons() {
+    const quickLaunch = document.querySelector('.quick-launch');
+    
+    // Define quick launch icons and their corresponding functions
+    const quickLaunchItems = [
+        {
+            title: 'Internet Explorer',
+            onClick: 'openInternetExplorer()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <circle cx="16" cy="16" r="14" fill="#0078D7"/>
+                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z" fill="#00A2ED"/>
+                </svg>`
+        },
+        {
+            title: 'Notepad',
+            onClick: 'openNotepad()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <path d="M6 2h20v28H6z" fill="white"/>
+                    <path d="M8 4h16v2H8zM8 8h16M8 12h16M8 16h16M8 20h12" stroke="#000" fill="none"/>
+                    <path d="M6 2h20v4H6z" fill="#C3C3C3"/>
+                </svg>`
+        },
+        {
+            title: 'Calculator',
+            onClick: 'openCalculator()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <rect x="4" y="4" width="24" height="24" fill="#f0f0f0"/>
+                    <path d="M6 6h20v6H6z" fill="#fff"/>
+                </svg>`
+        },
+        {
+            title: 'Windows Media Player',
+            onClick: 'openMediaPlayer()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <circle cx="16" cy="16" r="14" fill="#1db954"/>
+                    <path d="M13 10v12l8-6z" fill="white"/>
+                </svg>`
+        },
+        {
+            title: 'Paint',
+            onClick: 'openPaint()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <rect x="4" y="4" width="24" height="24" fill="#fff"/>
+                    <path d="M8 8h16v16H8z" fill="#f0f0f0"/>
+                    <path d="M12 12h8v8h-8z" fill="#ff0000"/>
+                </svg>`
+        },
+        {
+            title: 'Flash Player',
+            onClick: 'openFlashPlayer()',
+            svg: `<svg viewBox="0 0 32 32">
+                    <rect x="4" y="4" width="24" height="24" fill="#ff0000"/>
+                    <path d="M12 8l12 8-12 8V8z" fill="white"/>
+                </svg>`
+        }
+    ];
+
+    // Clear existing quick launch icons
+    quickLaunch.innerHTML = '';
+
+    // Add quick launch icons
+    quickLaunchItems.forEach(item => {
+        const icon = document.createElement('div');
+        icon.className = 'quick-launch-icon';
+        icon.setAttribute('onclick', item.onClick);
+        icon.setAttribute('title', item.title);
+        icon.innerHTML = item.svg;
+        quickLaunch.appendChild(icon);
+    });
+}
+
+// New Flash file handling functions
+function handleFlashFile(file) {
+    const flashContent = document.getElementById('flashContent');
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        // Clear previous content
+        flashContent.innerHTML = '';
+        
+        // Create container for Ruffle
+        const ruffleContainer = document.createElement('div');
+        ruffleContainer.id = 'ruffle-container';
+        ruffleContainer.style.width = '400px';
+        ruffleContainer.style.height = '300px';
+        flashContent.appendChild(ruffleContainer);
+        
+        // Initialize Ruffle
+        const ruffle = window.RufflePlayer.newest();
+        const player = ruffle.createPlayer();
+        ruffleContainer.appendChild(player);
+        
+        // Load the SWF file
+        player.load({
+            data: new Uint8Array(e.target.result),
+            swfFileName: file.name,
+            allowScriptAccess: true
+        }).catch(error => {
+            console.error('Ruffle error:', error);
+            flashContent.innerHTML = `
+                <div style="text-align: center;">
+                    <p>Error loading Flash file: ${error.message}</p>
+                </div>
+            `;
+        });
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+</script>
+</body></html>
